@@ -17,7 +17,7 @@ import subprocess
 import time
 import webbrowser
 import eel
-from hugchat import hugchat 
+from hugchat import hugchat
 import pvporcupine
 import pyaudio
 import pyautogui
@@ -26,6 +26,8 @@ import pygame
 from backend.command import speak
 from backend.config import ASSISTANT_NAME
 import sqlite3
+import requests
+import datetime
 
 from backend.helper import extract_yt_term, remove_words
 conn = sqlite3.connect("jarvis.db")

@@ -41,9 +41,14 @@ def getTodayEvents():
                     'time': event_time,
                     'description': event[2]
                 })
+
+            # Display events in frontend
+            eel.displayCalendarEvents({"success": True, "events": event_list})
+
             return {"success": True, "events": event_list}
         else:
             speak("You have no events scheduled for today.")
+            eel.displayCalendarEvents({"success": True, "events": []})
             return {"success": True, "events": []}
 
     except Exception as e:

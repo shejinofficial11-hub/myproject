@@ -30,6 +30,9 @@ cursor.execute(query)
 query = "CREATE TABLE IF NOT EXISTS notes(id integer primary key, content TEXT NOT NULL, category TEXT, tags TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP, updated_at TEXT DEFAULT CURRENT_TIMESTAMP)"
 cursor.execute(query)
 
+# Commit the changes
+conn.commit()
+
 
 # query = "INSERT INTO sys_command VALUES (null,'obs', 'C:\\Program Files\\obs-studio\\bin\\obs64.exe')"
 # cursor.execute(query)

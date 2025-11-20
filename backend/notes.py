@@ -98,6 +98,9 @@ def getRecentNotes(count=10):
         else:
             speak("You don't have any notes yet")
 
+        # Display notes in frontend
+        eel.displayNotes({"success": True, "notes": note_list})
+
         return {"success": True, "notes": note_list}
 
     except Exception as e:

@@ -246,6 +246,10 @@ def getWeather(location="current"):
             # Format response for user
             response = f"The current temperature in {city} is {temp}°C with {description}. Humidity is {humidity}% and wind speed is {wind_speed} m/s."
             speak(response)
+
+            # Display weather information in frontend
+            eel.displayWeather(weather_info)
+
             return weather_info
 
         else:

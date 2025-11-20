@@ -1,11 +1,29 @@
 import os
+import sys
 import eel
+from pathlib import Path
+
+# Add deployment directory to path
+sys.path.append(str(Path(__file__).parent / 'deployment'))
+
 from backend.auth import recoganize
 from backend.auth.recoganize import AuthenticateFace
 from backend.feature import *
 from backend.command import *
 from backend import calendar
 from backend import notes
+
+# Load configuration based on environment
+if os.getenv('JARVIS_ENV') == 'production':
+    try:
+        from backend.config_prod import config
+        print("Production configuration loaded")
+    except ImportError:
+        print("Warning: Production config not found, using default settings")
+        config = None
+else:
+    print("Development mode")
+    config = None
 
 
 

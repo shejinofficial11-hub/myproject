@@ -83,6 +83,15 @@ def takeAllCommands(message=None):
             elif "on youtube" in query:
                 from backend.feature import PlayYoutube
                 PlayYoutube(query)
+            elif "weather" in query or "temperature" in query or "forecast" in query:
+                from backend.feature import processWeatherCommand
+                processWeatherCommand(query)
+            elif any(word in query for word in ["calendar", "schedule", "appointment", "meeting", "reminder", "event"]):
+                from backend.calendar import processCalendarCommand
+                processCalendarCommand(query)
+            elif "take a note" in query or "save note" in query or "remember this" in query:
+                from backend.notes import processNoteCommand
+                processNoteCommand(query)
             else:
                 from backend.feature import chatBot
                 chatBot(query)

@@ -17,7 +17,7 @@ import subprocess
 import time
 import webbrowser
 import eel
-from hugchat import hugchat 
+from hugchat import hugchat
 import pvporcupine
 import pyaudio
 import pyautogui
@@ -26,6 +26,8 @@ import pygame
 from backend.command import speak
 from backend.config import ASSISTANT_NAME
 import sqlite3
+import requests
+import datetime
 
 from backend.helper import extract_yt_term, remove_words
 conn = sqlite3.connect("jarvis.db")
@@ -199,3 +201,110 @@ def chatBot(query):
     print(response)
     speak(response)
     return response
+
+# Weather Functions
+@eel.expose
+def getWeather(location="current"):
+    """Fetch current weather and 3-day forecast"""
+    try:
+        # Use OpenWeatherMap API (you'll need to add API key to config)
+        API_KEY = "your_openweathermap_api_key_here"  # This should be in config.py
+
+        if location == "current":
+            # For now, default to a major city
+            # In a real implementation, you'd use IP geolocation or GPS
+            city = "New York"
+        else:
+            city = location
+
+        # Current weather
+        current_url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
+        current_response = requests.get(current_url)
+        current_data = current_response.json()
+
+        if current_response.status_code == 200:
+            # Extract current weather info
+            temp = current_data['main']['temp']
+            description = current_data['weather'][0]['description']
+            humidity = current_data['main']['humidity']
+            wind_speed = current_data['wind']['speed']
+
+            # Save to search history
+            cursor.execute("INSERT INTO weather_search_history (location) VALUES (?)", (city,))
+            conn.commit()
+
+            weather_info = {
+                'current': {
+                    'temperature': temp,
+                    'description': description,
+                    'humidity': humidity,
+                    'wind_speed': wind_speed,
+                    'location': city
+                }
+            }
+
+            # Format response for user
+            response = f"The current temperature in {city} is {temp}°C with {description}. Humidity is {humidity}% and wind speed is {wind_speed} m/s."
+            speak(response)
+
+            # Display weather information in frontend
+            eel.displayWeather(weather_info)
+
+            return weather_info
+
+        else:
+            speak("Sorry, I couldn't fetch the weather information for that location.")
+            return None
+
+    except Exception as e:
+        print(f"Weather API error: {e}")
+        speak("Sorry, I'm having trouble getting weather information right now.")
+        return None
+
+@eel.expose
+def getWeatherAlerts():
+    """Check for severe weather alerts"""
+    try:
+        # This would require a premium weather API or different service
+        # For now, return a placeholder
+        speak("No severe weather alerts in your area at this time.")
+        return {"alerts": []}
+    except Exception as e:
+        print(f"Weather alerts error: {e}")
+        speak("Sorry, I couldn't check for weather alerts.")
+        return None
+
+def processWeatherCommand(query):
+    """Process weather-related voice commands"""
+    query_lower = query.lower()
+
+    if "weather" in query_lower:
+        if "current" in query_lower or "what's the weather" in query_lower or "temperature" in query_lower:
+            getWeather()
+        elif "forecast" in query_lower:
+            speak("Weather forecasting feature coming soon!")
+        elif any(word in query_lower for word in ["rain", "raining", "umbrella"]):
+            getWeather()  # Get current weather to check for rain
+        else:
+            # Extract location from query
+            location = extractLocationFromQuery(query)
+            if location:
+                getWeather(location)
+            else:
+                getWeather()
+        return True
+
+    return False
+
+def extractLocationFromQuery(query):
+    """Extract location name from weather query"""
+    # Simple implementation - looks for "in [city]" pattern
+    words = query.split()
+    for i, word in enumerate(words):
+        if word.lower() == "in" and i + 1 < len(words):
+            # Take everything after "in" as location
+            location = " ".join(words[i+1:])
+            # Remove common words that aren't part of location
+            location = location.replace(" weather", "").replace(" forecast", "").replace(" current", "")
+            return location.strip()
+    return None
